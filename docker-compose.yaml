@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # Node.js Application
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: leetcode-app
+    restart: always
+    ports:
+      - "8080:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://admin:password123@mongodb:27017/leetcode?authSource=admin
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - MONGODB_DATABASE=leetcode
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - leetcode-network
+    volumes:
+      # Optional: Mount source code for development (remove in production)
+      - .:/app
+      - /app/node_modules
+    # healthcheck:
+    #   test: ["CMD", "node", "healthcheck.js"]
+    #   interval: 30s
+    #   timeout: 3s
+    #   start_period: 5s
+    #   retries: 3
+
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: leetcode-mongodb
+    restart: always
+    ports:
+      - "27018:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password123
+      - MONGO_INITDB_DATABASE=leetcode
+    volumes:
+      # Mount MongoDB data directory to local folder
+      - ./mongodb-data:/data/db
+      # Optional: Mount initialization scripts
+      - ./mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - leetcode-network
+    healthcheck:
+      test: |
+        echo 'db.runCommand("ping").ok' | mongosh localhost:27017/leetcode --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+# Networks
+networks:
+  leetcode-network:
+    driver: bridge
+    name: leetcode-network
+
+# Volumes (optional explicit definition)
+volumes:
+  mongodb-data:
+    driver: local

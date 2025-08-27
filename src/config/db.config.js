@@ -4,6 +4,7 @@ const DB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/leetcode-ba
 
 async function connectToDatabase() {
   try {
+    console.log("DB_URI", DB_URI);
     await mongoose.connect(DB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,

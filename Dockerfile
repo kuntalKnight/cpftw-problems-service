@@ -1,5 +1,5 @@
 # Use the official Node.js 18 runtime as base image
-FROM node:18-alpine
+FROM node:20-alpine 
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -8,7 +8,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+# RUN npm ci --only=production
+RUN npm install
 
 # Copy the rest of the application code
 COPY . .
@@ -20,13 +21,12 @@ RUN adduser -S leetcode -u 1001
 # Change ownership of the app directory to the nodejs user
 RUN chown -R leetcode:nodejs /app
 USER leetcode
-
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Add health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node healthcheck.js
+# # Add health check
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+#   CMD node healthcheck.js
 
 # Define the command to run the application
 CMD ["npm", "start"]
