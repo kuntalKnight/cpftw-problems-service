@@ -14,8 +14,8 @@ class ProblemRepository {
       
       console.log('🔍 findAll called with filters:', filters);
       
-      // Build query
-      const query = { isActive: true };
+      // Build query (treat docs without isActive as active)
+      const query = { $or: [ { isActive: { $exists: false } }, { isActive: true } ] };
       
       if (difficulty) {
         query.difficulty = difficulty.toLowerCase();
@@ -133,8 +133,8 @@ class ProblemRepository {
     try {
       const { query, page = 1, limit = 10, difficulty, category } = searchParams;
       
-      // Build search query
-      const searchQuery = { isActive: true };
+      // Build search query (treat docs without isActive as active)
+      const searchQuery = { $or: [ { isActive: { $exists: false } }, { isActive: true } ] };
       
       if (query) {
         searchQuery.$text = { $search: query };
@@ -199,7 +199,7 @@ class ProblemRepository {
   async getStatistics() {
     try {
       const stats = await Problem.aggregate([
-        { $match: { isActive: true } },
+        { $match: { $or: [ { isActive: { $exists: false } }, { isActive: true } ] } },
         {
           $group: {
             _id: null,
