@@ -57,7 +57,40 @@ class ProblemRepository {
    */
   async findById(id) {
     try {
+      // Support lookup by a simple numeric/string custom id if present
+      // 1) Try explicit custom field `id` first (if documents have it)
+      const isNumericId = !isNaN(parseInt(id));
+
+      if (isNumericId) {
+        const numericId = parseInt(id);
+
+        // Try direct match on custom `id` field
+        const byCustomId = await Problem.findOne({ id: numericId }).lean();
+        if (byCustomId) {
+          if (byCustomId && byCustomId._id && typeof byCustomId._id.toString === 'function') {
+            byCustomId._id = byCustomId._id.toString();
+          }
+          return byCustomId;
+        }
+
+        // Fallback: treat numeric id as 1-based index in seed order (createdAt ascending)
+        // Only include active (or missing isActive) documents for consistency
+        const seedOrdered = await Problem.find({ $or: [ { isActive: { $exists: false } }, { isActive: true } ] })
+          .sort({ createdAt: 1 })
+          .skip(Math.max(0, numericId - 1))
+          .limit(1)
+          .lean();
+        if (seedOrdered[0] && seedOrdered[0]._id && typeof seedOrdered[0]._id.toString === 'function') {
+          seedOrdered[0]._id = seedOrdered[0]._id.toString();
+        }
+        return seedOrdered[0] || null;
+      }
+
+      // 2) Fallback to default MongoDB ObjectId lookup for non-numeric ids
       const problem = await Problem.findById(id).lean();
+      if (problem && problem._id && typeof problem._id.toString === 'function') {
+        problem._id = problem._id.toString();
+      }
       return problem;
     } catch (error) {
       console.error('Error in findById:', error);
@@ -87,8 +120,10 @@ class ProblemRepository {
    */
   async update(id, updateData) {
     try {
-      const updatedProblem = await Problem.findByIdAndUpdate(
-        id,
+      const isNumericId = !isNaN(parseInt(id));
+      const filter = isNumericId ? { id: parseInt(id) } : { _id: id };
+      const updatedProblem = await Problem.findOneAndUpdate(
+        filter,
         { ...updateData, updatedAt: new Date() },
         { new: true, runValidators: true }
       ).lean();
@@ -109,8 +144,10 @@ class ProblemRepository {
    */
   async delete(id) {
     try {
-      const deletedProblem = await Problem.findByIdAndUpdate(
-        id,
+      const isNumericId = !isNaN(parseInt(id));
+      const filter = isNumericId ? { id: parseInt(id) } : { _id: id };
+      const deletedProblem = await Problem.findOneAndUpdate(
+        filter,
         { isActive: false, updatedAt: new Date() },
         { new: true }
       );

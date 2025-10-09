@@ -533,6 +533,11 @@ try {
         }
     ];
 
+    // Assign explicit sequential numeric ids starting from 1
+    for (var i = 0; i < problemsData.length; i++) {
+        problemsData[i].id = i + 1;
+    }
+
     print('📝 Attempting to insert', problemsData.length, 'problems...');
     
     // Insert the problems data
@@ -561,6 +566,7 @@ try {
 print('🔍 Creating indexes...');
 try {
     db.problems.createIndex({ "title": 1 }, { unique: true });
+    db.problems.createIndex({ "id": 1 }, { unique: true });
     db.problems.createIndex({ "difficulty": 1 });
     db.problems.createIndex({ "category": 1 });
     db.problems.createIndex({ "tags": 1 });

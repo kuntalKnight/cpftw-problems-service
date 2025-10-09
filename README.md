@@ -34,6 +34,7 @@ Request Flow: Router → Middleware → Interceptor → Controller → Validator
 - **Modular Design**: Clean separation of concerns for maintainability
 - **MongoDB Integration**: Full database integration with Mongoose ODM
 - **Data Seeding**: Automated database population with sample problems
+ - **Custom Numeric IDs**: Each problem has a sequential numeric `id` for easy access
 
 ## 📁 Project Structure
 
@@ -106,6 +107,7 @@ src/
 
 ```javascript
 {
+  id: Number (unique, sequential, assigned during seeding),
   title: String (required, unique, max 200 chars),
   description: String (required, min 10, max 5000 chars),
   difficulty: String (enum: 'easy', 'medium', 'hard'),
@@ -135,7 +137,7 @@ src/
 #### Problems
 - `GET /problems` - Get all problems with pagination
 - `GET /problems/search` - Search problems
-- `GET /problems/:id` - Get problem by ID
+- `GET /problems/:id` - Get problem by ID (numeric custom `id`, e.g. `/problems/1`)
 - `POST /problems` - Create new problem
 - `PUT /problems/:id` - Update problem
 - `DELETE /problems/:id` - Delete problem (soft delete)
@@ -255,7 +257,14 @@ This will:
 - Connect to MongoDB
 - Clear existing problems
 - Insert 5 sample problems (Two Sum, Add Two Numbers, etc.)
+- Assign sequential numeric `id` values starting at 1 (e.g., 1, 2, 3, ...)
 - Display insertion results
+
+After seeding, you can fetch a specific problem by its numeric `id`:
+
+```bash
+curl http://localhost:3000/api/v1/problems/1
+```
 
 ### Database Management
 

@@ -181,9 +181,10 @@ async function seedDatabase() {
     const deleteResult = await Problem.deleteMany({});
     console.log(`✅ Deleted ${deleteResult.deletedCount} existing problems`);
     
-    // Insert sample problems
+    // Insert sample problems with explicit sequential ids
     console.log('📝 Inserting sample problems...');
-    const insertedProblems = await Problem.insertMany(sampleProblems);
+    const problemsWithIds = sampleProblems.map((p, idx) => ({ ...p, id: idx + 1 }));
+    const insertedProblems = await Problem.insertMany(problemsWithIds);
     console.log(`✅ Successfully inserted ${insertedProblems.length} problems`);
     
     // Verify insertion

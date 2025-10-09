@@ -20,6 +20,11 @@ const testCaseSchema = new mongoose.Schema({
 
 // Problem Schema
 const problemSchema = new mongoose.Schema({
+  id: {
+    type: Number,
+    unique: true,
+    index: true
+  },
   title: {
     type: String,
     required: [true, 'Problem title is required'],
